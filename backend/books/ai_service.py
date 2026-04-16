@@ -1,6 +1,6 @@
 import requests
 
-LM_STUDIO_URL = "http://127.0.0.1:1234/api/v1/chat/completions"
+LM_STUDIO_URL = "http://127.0.0.1:1234/v1/chat/completions"
 
 def ask_lm_studio(prompt):
     """Send a prompt to LM Studio and get a response"""
@@ -14,8 +14,18 @@ def ask_lm_studio(prompt):
     }
     try:
         response = requests.post(LM_STUDIO_URL, json=payload, timeout=60)
+        response.raise_for_status()
         data = response.json()
-        return data["choices"][0]["message"]["content"].strip()
+        # Handle different response formats
+        if "choices" in data and len(data["choices"]) > 0:
+            choice = data["choices"][0]
+            if "message" in choice:
+                return choice["message"]["content"].strip()
+            elif "text" in choice:
+                return choice["text"].strip()
+        return "Could not generate response."
+    except requests.exceptions.Timeout:
+        return "AI request timed out. Please try again."
     except Exception as e:
         return f"AI Error: {str(e)}"
 

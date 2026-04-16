@@ -1,125 +1,144 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { BookOpen, Star, ExternalLink, ArrowLeft, Sparkles, Loader } from "lucide-react";
 
 interface Book {
-  id: number;
-  title: string;
-  author: string;
-  rating: number;
-  description: string;
-  genre: string;
-  url: string;
-  summary: string;
-  sentiment: string;
+  id: number; title: string; author: string; rating: number;
+  genre: string; description: string; url: string; summary: string; sentiment: string;
 }
 
 export default function BookDetail() {
   const router = useRouter();
   const { id } = router.query;
-
   const [book, setBook] = useState<Book | null>(null);
-  const [recommendations, setRecommendations] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [insightLoading, setInsightLoading] = useState(false);
+  const [recs, setRecs] = useState<Book[]>([]);
+  const [loadingInsights, setLoadingInsights] = useState(false);
+  const [insightsDone, setInsightsDone] = useState(false);
 
   useEffect(() => {
     if (!id) return;
     fetch(`http://127.0.0.1:8000/api/books/${id}/`)
-      .then((res) => res.json())
-      .then((data) => {
-        setBook(data);
-        setLoading(false);
-      });
-
+      .then(r => r.json()).then(data => { setBook(data); if (data.summary) setInsightsDone(true); });
     fetch(`http://127.0.0.1:8000/api/books/${id}/recommend/`)
-      .then((res) => res.json())
-      .then((data) => setRecommendations(data));
+      .then(r => r.json()).then(setRecs);
   }, [id]);
 
   const generateInsights = async () => {
-    setInsightLoading(true);
-    const res = await fetch(`http://127.0.0.1:8000/api/books/${id}/insights/`, {
-      method: "POST",
-    });
+    setLoadingInsights(true);
+    const res = await fetch(`http://127.0.0.1:8000/api/books/${id}/insights/`, { method: "POST" });
     const data = await res.json();
-    setBook(data);
-    setInsightLoading(false);
+    setBook(data); setInsightsDone(true); setLoadingInsights(false);
   };
 
-  if (loading) return <p className="text-center mt-20 text-gray-500">Loading...</p>;
-  if (!book) return <p className="text-center mt-20 text-gray-500">Book not found</p>;
+  const sentimentColor: Record<string, string> = {
+    Positive: "#4ade80", Uplifting: "#4ade80", Romantic: "#f472b6",
+    Dark: "#f87171", Thrilling: "#fb923c", Mysterious: "#a78bfa",
+    Neutral: "#7c9cbf", Negative: "#f87171",
+  };
+
+  if (!book) return (
+    <div style={{ minHeight: "100vh", background: "#0d0f14", display: "flex", alignItems: "center", justifyContent: "center", color: "#4b5563", fontFamily: "Georgia, serif" }}>
+      Loading...
+    </div>
+  );
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-3xl mx-auto">
-        <Link href="/" className="text-blue-600 hover:underline mb-6 inline-block">
-          ← Back to all books
-        </Link>
-
-        {/* Book Card */}
-        <div className="bg-white rounded-xl shadow p-8 mb-6">
-          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-            {book.genre || "Unknown"}
-          </span>
-          <h1 className="text-3xl font-bold text-gray-800 mt-4 mb-1">{book.title}</h1>
-          <p className="text-gray-500 mb-3">by {book.author || "Unknown"}</p>
-          <div className="flex items-center gap-1 mb-4">
-            {[...Array(5)].map((_, i) => (
-              <span key={i} className={i < book.rating ? "text-yellow-400 text-xl" : "text-gray-300 text-xl"}>
-                ★
-              </span>
-            ))}
-          </div>
-          <p className="text-gray-700 mb-6">{book.description}</p>
-          <a href={book.url} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline text-sm">
-            View on source site →
-          </a>
+    <div style={{ minHeight: "100vh", background: "#0d0f14", color: "#e8e6e1", fontFamily: "Georgia, serif" }}>
+      <nav style={{ borderBottom: "1px solid #1e2330", padding: "1.2rem 2.5rem", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "#0d0f14cc", backdropFilter: "blur(12px)", zIndex: 100 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+          <BookOpen size={22} color="#7c9cbf" />
+          <span style={{ fontSize: "1.1rem", letterSpacing: "0.08em", color: "#c8d8e8" }}>BIBLIOS</span>
         </div>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#6b7280", textDecoration: "none", fontSize: "0.85rem" }}>
+          <ArrowLeft size={14} /> BACK TO LIBRARY
+        </Link>
+      </nav>
+
+      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "3rem 2.5rem" }}>
+        {/* Header */}
+        <div style={{ marginBottom: "2.5rem" }}>
+          {book.genre && <div style={{ fontSize: "0.7rem", letterSpacing: "0.2em", color: "#7c9cbf", marginBottom: "0.8rem" }}>{book.genre.toUpperCase()}</div>}
+          <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontWeight: "400", margin: "0 0 0.8rem", lineHeight: "1.2" }}>{book.title}</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", color: "#4b5563", fontSize: "0.85rem" }}>
+            {book.author && <span>{book.author}</span>}
+            <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <Star size={12} color="#7c9cbf" fill="#7c9cbf" />
+              <span style={{ color: "#7c9cbf" }}>{book.rating}</span>
+            </div>
+            {book.sentiment && (
+              <span style={{ color: sentimentColor[book.sentiment] || "#7c9cbf", fontSize: "0.75rem", letterSpacing: "0.1em" }}>
+                {book.sentiment.toUpperCase()}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Description */}
+        {book.description && (
+          <div style={{ borderLeft: "2px solid #1e2330", paddingLeft: "1.5rem", marginBottom: "2.5rem" }}>
+            <p style={{ color: "#9ca3af", lineHeight: "1.8", fontSize: "0.95rem", margin: 0 }}>{book.description}</p>
+          </div>
+        )}
 
         {/* AI Insights */}
-        <div className="bg-white rounded-xl shadow p-8 mb-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">🤖 AI Insights</h2>
-
-          {book.summary ? (
-            <div className="mb-4">
-              <p className="text-sm font-semibold text-gray-500 uppercase mb-1">Summary</p>
-              <p className="text-gray-700">{book.summary}</p>
+        <div style={{ background: "#13161f", border: "1px solid #1e2330", padding: "1.8rem", marginBottom: "2.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.2rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.75rem", letterSpacing: "0.15em", color: "#7c9cbf" }}>
+              <Sparkles size={14} />
+              AI INSIGHTS
             </div>
-          ) : null}
+            {!insightsDone && (
+              <button onClick={generateInsights} disabled={loadingInsights}
+                style={{ display: "flex", alignItems: "center", gap: "0.4rem", background: "#7c9cbf", color: "#0d0f14", border: "none", padding: "0.5rem 1rem", fontSize: "0.75rem", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "monospace" }}>
+                {loadingInsights ? <><Loader size={12} /> GENERATING...</> : "GENERATE INSIGHTS"}
+              </button>
+            )}
+          </div>
 
-          {book.sentiment ? (
-            <div className="mb-4">
-              <p className="text-sm font-semibold text-gray-500 uppercase mb-1">Tone / Sentiment</p>
-              <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
-                {book.sentiment}
-              </span>
+          {insightsDone ? (
+            <div style={{ display: "grid", gap: "1.2rem" }}>
+              {book.summary && (
+                <div>
+                  <div style={{ fontSize: "0.7rem", letterSpacing: "0.15em", color: "#4b5563", marginBottom: "0.4rem" }}>SUMMARY</div>
+                  <p style={{ color: "#9ca3af", lineHeight: "1.7", fontSize: "0.9rem", margin: 0 }}>{book.summary}</p>
+                </div>
+              )}
+              {book.sentiment && (
+                <div>
+                  <div style={{ fontSize: "0.7rem", letterSpacing: "0.15em", color: "#4b5563", marginBottom: "0.4rem" }}>TONE</div>
+                  <span style={{ color: sentimentColor[book.sentiment] || "#7c9cbf" }}>{book.sentiment}</span>
+                </div>
+              )}
             </div>
-          ) : null}
-
-          {!book.summary && !book.sentiment && (
-            <p className="text-gray-400 mb-4">No AI insights generated yet.</p>
+          ) : (
+            <p style={{ color: "#4b5563", fontSize: "0.85rem", margin: 0 }}>Click "Generate Insights" to get AI-powered summary and sentiment analysis for this book.</p>
           )}
-
-          <button
-            onClick={generateInsights}
-            disabled={insightLoading}
-            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50"
-          >
-            {insightLoading ? "Generating..." : "✨ Generate AI Insights"}
-          </button>
         </div>
 
+        {/* External Link */}
+        {book.url && (
+          <a href={book.url} target="_blank" rel="noreferrer"
+            style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", color: "#7c9cbf", fontSize: "0.8rem", letterSpacing: "0.1em", textDecoration: "none", marginBottom: "2.5rem" }}>
+            <ExternalLink size={13} /> VIEW ON SOURCE SITE
+          </a>
+        )}
+
         {/* Recommendations */}
-        {recommendations.length > 0 && (
-          <div className="bg-white rounded-xl shadow p-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">📖 Similar Books</h2>
-            <div className="flex flex-col gap-3">
-              {recommendations.map((rec) => (
-                <Link href={`/books/${rec.id}`} key={rec.id}>
-                  <div className="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer">
-                    <p className="font-medium text-gray-800">{rec.title}</p>
-                    <p className="text-sm text-gray-500">{rec.genre}</p>
+        {recs.length > 0 && (
+          <div>
+            <div style={{ fontSize: "0.7rem", letterSpacing: "0.2em", color: "#4b5563", marginBottom: "1.2rem" }}>YOU MIGHT ALSO LIKE</div>
+            <div style={{ display: "grid", gap: "1px", background: "#1e2330" }}>
+              {recs.map(rec => (
+                <Link key={rec.id} href={`/books/${rec.id}`} style={{ textDecoration: "none" }}>
+                  <div style={{ background: "#0d0f14", padding: "1rem 1.2rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "#13161f")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "#0d0f14")}>
+                    <span style={{ color: "#9ca3af", fontSize: "0.9rem" }}>{rec.title}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                      <Star size={11} color="#7c9cbf" fill="#7c9cbf" />
+                      <span style={{ fontSize: "0.75rem", color: "#7c9cbf" }}>{rec.rating}</span>
+                    </div>
                   </div>
                 </Link>
               ))}
@@ -127,6 +146,6 @@ export default function BookDetail() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
