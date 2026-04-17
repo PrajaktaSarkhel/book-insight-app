@@ -5,7 +5,7 @@ LM_STUDIO_URL = "http://127.0.0.1:1234/v1/chat/completions"
 def ask_lm_studio(prompt):
     """Send a prompt to LM Studio and get a response"""
     payload = {
-        "model": "tinyllama-1.1b-chat-v0.6:4",
+        "model": "tinyllama-1.1b-chat-v0.6",
         "messages": [
             {"role": "user", "content": prompt}
         ],
