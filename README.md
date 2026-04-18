@@ -5,6 +5,7 @@ A full-stack web application that scrapes book data, generates AI insights, and 
 ## Screenshots
 
 ![Homepage](screenshots/home.png)
+![Book List View](screenshots/home-list.png)
 ![Book Detail](screenshots/book-detail.png)
 ![QA Interface](screenshots/qa.png)
 
