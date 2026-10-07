@@ -45,6 +45,54 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroGlow {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.15) translate(10px, -15px);
+  }
+}
+
+@keyframes heroFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(1.5deg);
+  }
+}
+
+@keyframes subtleFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(139, 94, 60, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(139, 94, 60, 0);
+  }
+}
+
+@keyframes shimmerText {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
 @keyframes float0 {
   0%, 100% { transform: translateY(0px) rotate(-8deg); }
   50%       { transform: translateY(-12px) rotate(-8deg); }
@@ -65,14 +113,39 @@ body {
   50%       { transform: translateY(-10px) rotate(7deg); }
 }
 
-@keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
 @keyframes slideIn {
   from { opacity: 0; transform: translateX(-10px); }
   to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Hero Entrance Delays */
+.hero-anim-1 {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.hero-anim-2 {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+.hero-anim-3 {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+.hero-anim-4 {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
+}
+
+/* Glass & Parchment Cards */
+.glass-parchment {
+  background: rgba(245, 240, 232, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 196, 160, 0.7);
+}
+
+.book-card-interactive {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.book-card-interactive:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px -8px rgba(92, 59, 30, 0.16);
+  border-color: #8b5e3c !important;
 }
 
 /* Links */

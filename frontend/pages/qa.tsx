@@ -1,37 +1,47 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { BookOpen, Send, Loader, MessageSquare, ArrowLeft, Sparkles } from "lucide-react";
 import { API_BASE_URL } from "../lib/api";
+import Footer from "../components/Footer";
 
 interface Source { id: number; title: string; }
 interface QAResult { question: string; answer: string; sources: Source[]; }
 
 export default function QA() {
+  const router = useRouter();
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<QAResult[]>([]);
 
-  const ask = async () => {
-    if (!question.trim()) return;
+  useEffect(() => {
+    if (router.isReady && router.query.q) {
+      const initialQ = String(router.query.q);
+      setQuestion(initialQ);
+      // Auto-ask if query is provided
+      askQuestionText(initialQ);
+    }
+  }, [router.isReady, router.query.q]);
+
+  const askQuestionText = async (text: string) => {
+    if (!text.trim()) return;
     setLoading(true);
-    const q = question;
-    setQuestion("");
     try {
       const res = await fetch(`${API_BASE_URL}/api/ask/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: text }),
       });
       if (!res.ok) {
         throw new Error(`Server returned ${res.status}`);
       }
       const data = await res.json();
-      setHistory(prev => [{ ...data, question: q }, ...prev]);
+      setHistory(prev => [{ ...data, question: text }, ...prev]);
     } catch (err: any) {
       setHistory(prev => [
         {
-          question: q,
+          question: text,
           answer: `Could not connect to Biblios API (${err?.message || "network error"}). If deployed, please check backend service status.`,
           sources: []
         },
@@ -40,6 +50,13 @@ export default function QA() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const ask = async () => {
+    if (!question.trim()) return;
+    const q = question;
+    setQuestion("");
+    await askQuestionText(q);
   };
 
   return (
@@ -198,13 +215,7 @@ export default function QA() {
         </div>
 
         {/* Footer */}
-        <div style={{ borderTop: "1px solid #d4c4a0", marginTop: "4rem", padding: "2rem 3rem", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#ede6d6" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-            <BookOpen size={16} color="#8b7355" />
-            <span style={{ fontSize: "0.8rem", letterSpacing: "0.1em", color: "#8b7355", fontFamily: "'Playfair Display', serif" }}>BIBLIOS</span>
-          </div>
-          <div style={{ fontSize: "0.7rem", color: "#c8b89a", letterSpacing: "0.1em" }}>AI-POWERED BOOK INTELLIGENCE</div>
-        </div>
+        <Footer />
       </div>
     </>
   );

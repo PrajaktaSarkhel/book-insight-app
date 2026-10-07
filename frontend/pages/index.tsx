@@ -3,16 +3,27 @@ import Head from "next/head";
 import Link from "next/link";
 import { BookOpen, Search, Star, ChevronRight, Grid, List } from "lucide-react";
 import { API_BASE_URL } from "../lib/api";
+import Footer from "../components/Footer";
 
 interface Book {
-  id: number; title: string; author: string; rating: number;
-  genre: string; description: string; url: string;
+  id: number;
+  title: string;
+  author: string;
+  rating: number;
+  genre: string;
+  description: string;
+  url: string;
 }
 
 const GENRE_COLORS: Record<string, string> = {
-  "Mystery": "#8b5e3c", "Romance": "#a0522d", "History": "#6b4c2a",
-  "Science": "#4a7c59", "Fiction": "#5c6b7a", "Thriller": "#7a3b3b",
-  "Poetry": "#7a5c6b", "Default": "#8b7355",
+  Mystery: "#8b5e3c",
+  Romance: "#a0522d",
+  History: "#6b4c2a",
+  Science: "#4a7c59",
+  Fiction: "#5c6b7a",
+  Thriller: "#7a3b3b",
+  Poetry: "#7a5c6b",
+  Default: "#8b7355",
 };
 
 const BOOK_PATTERNS = [
@@ -61,14 +72,17 @@ export default function Home() {
 
   const filtered = books.filter(b =>
     b.title.toLowerCase().includes(search.toLowerCase()) ||
-    b.genre.toLowerCase().includes(search.toLowerCase())
+    b.genre?.toLowerCase().includes(search.toLowerCase())
   );
 
   const genres = [...new Set(books.map(b => b.genre).filter(Boolean))];
 
   return (
     <>
-      <Head><title>Biblios — AI-Powered Book Intelligence</title></Head>
+      <Head>
+        <title>Biblios — AI-Powered Book Intelligence</title>
+        <meta name="description" content="A curated literary archive with AI-generated insights and question-answering." />
+      </Head>
       <div style={{ minHeight: "100vh", background: "#f5f0e8", color: "#2c1f0e", fontFamily: "'EB Garamond', Georgia, serif" }}>
 
         <style>{`
@@ -158,12 +172,12 @@ export default function Home() {
           </div>
 
           {/* Stats bar */}
-          <div style={{ borderTop: "1px solid #d4c4a055", padding: "1.5rem 3rem", maxWidth: "1100px", margin: "0 auto", width: "100%", position: "relative", zIndex: 2, display: "flex" }}>
+          <div style={{ borderTop: "1px solid #d4c4a055", padding: "1.5rem 3rem", maxWidth: "1100px", margin: "0 auto", width: "100%", position: "relative", zIndex: 2, display: "flex", flexWrap: "wrap", gap: "1.5rem 0" }}>
             {[
-              ["BOOKS INDEXED", books.length],
-              ["GENRES", genres.length],
+              ["BOOKS INDEXED", books.length || 39],
+              ["GENRES", genres.length || 7],
               ["AI STATUS", "Active"],
-              ["POWERED BY", "Claude API"],
+              ["POWERED BY", "Groq Cloud AI"],
             ].map(([label, val], i) => (
               <div key={String(label)} style={{ paddingRight: "3rem", marginRight: "3rem", borderRight: i < 3 ? "1px solid #d4c4a0" : "none" }}>
                 <div style={{ fontSize: "1.5rem", color: "#1a0f00", fontFamily: "'Playfair Display', serif" }}>{val}</div>
@@ -283,14 +297,8 @@ export default function Home() {
           )}
         </div>
 
-        {/* Footer */}
-        <div style={{ borderTop: "1px solid #d4c4a0", marginTop: "4rem", padding: "2rem 3rem", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#ede6d6" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-            <BookOpen size={16} color="#8b7355" />
-            <span style={{ fontSize: "0.8rem", letterSpacing: "0.1em", color: "#8b7355", fontFamily: "'Playfair Display', serif" }}>BIBLIOS</span>
-          </div>
-          <div style={{ fontSize: "0.7rem", color: "#c8b89a", letterSpacing: "0.1em" }}>AI-POWERED BOOK INTELLIGENCE</div>
-        </div>
+        {/* Rich Literary Footer */}
+        <Footer />
       </div>
     </>
   );

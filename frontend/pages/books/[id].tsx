@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { BookOpen, Star, ExternalLink, ArrowLeft, Sparkles, Loader } from "lucide-react";
 import { API_BASE_URL } from "../../lib/api";
+import Footer from "../../components/Footer";
 
 interface Book {
   id: number; title: string; author: string; rating: number;
@@ -223,13 +224,7 @@ export default function BookDetail() {
       </div>
 
       {/* Footer */}
-      <div style={{ borderTop: "1px solid #d4c4a0", marginTop: "4rem", padding: "2rem 3rem", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#ede6d6" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-          <BookOpen size={16} color="#8b7355" />
-          <span style={{ fontSize: "0.8rem", letterSpacing: "0.1em", color: "#8b7355", fontFamily: "'Playfair Display', serif" }}>BIBLIOS</span>
-        </div>
-        <div style={{ fontSize: "0.7rem", color: "#c8b89a", letterSpacing: "0.1em" }}>AI-POWERED BOOK INTELLIGENCE</div>
-      </div>
+      <Footer />
     </div>
   );
 }

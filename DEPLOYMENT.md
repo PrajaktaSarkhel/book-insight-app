@@ -118,7 +118,7 @@ Your local development workflow remains fully supported and backwards-compatible
 ### Backend:
 ```bash
 cd backend
-python manage.py runserver
+
 ```
 *(Optionally provide a `GROQ_API_KEY` in `backend/.env` to use cloud AI locally, or run LM Studio on `localhost:1234`)*
 
