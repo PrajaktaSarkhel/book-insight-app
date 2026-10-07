@@ -15,7 +15,7 @@ def get_ai_config():
         if groq_api_key or (api_key and api_key.startswith("gsk_")):
             url = "https://api.groq.com/openai/v1/chat/completions"
             if not model:
-                model = "llama-3.1-8b-instant"
+                model = "openai/gpt-oss-20b"
         elif openai_api_key or (api_key and api_key.startswith("sk-")):
             url = "https://api.openai.com/v1/chat/completions"
             if not model:
@@ -27,7 +27,7 @@ def get_ai_config():
                 model = "tinyllama-1.1b-chat-v0.6"
 
     if not model:
-        model = "llama-3.1-8b-instant" if "groq" in url else "tinyllama-1.1b-chat-v0.6"
+        model = "openai/gpt-oss-20b" if "groq" in url else "tinyllama-1.1b-chat-v0.6"
 
     headers = {"Content-Type": "application/json"}
     if api_key:
@@ -54,6 +54,10 @@ def ask_lm_studio(prompt):
 
     try:
         response = requests.post(url, json=payload, headers=headers, timeout=45)
+        if response.status_code == 404 and "groq" in url and payload["model"] != "qwen/qwen3.8-27b":
+            payload["model"] = "qwen/qwen3.8-27b"
+            response = requests.post(url, json=payload, headers=headers, timeout=45)
+
         if response.status_code == 401:
             return "AI Error: Unauthorized. Please check your GROQ_API_KEY or OPENAI_API_KEY."
         response.raise_for_status()
