@@ -2,6 +2,7 @@ import { useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { BookOpen, Send, Loader, MessageSquare, ArrowLeft, Sparkles } from "lucide-react";
+import { API_BASE_URL } from "../lib/api";
 
 interface Source { id: number; title: string; }
 interface QAResult { question: string; answer: string; sources: Source[]; }
@@ -16,14 +17,29 @@ export default function QA() {
     setLoading(true);
     const q = question;
     setQuestion("");
-    const res = await fetch("http://127.0.0.1:8000/api/ask/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: q }),
-    });
-    const data = await res.json();
-    setHistory(prev => [{ ...data, question: q }, ...prev]);
-    setLoading(false);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ask/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q }),
+      });
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}`);
+      }
+      const data = await res.json();
+      setHistory(prev => [{ ...data, question: q }, ...prev]);
+    } catch (err: any) {
+      setHistory(prev => [
+        {
+          question: q,
+          answer: `Could not connect to Biblios API (${err?.message || "network error"}). If deployed, please check backend service status.`,
+          sources: []
+        },
+        ...prev
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

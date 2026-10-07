@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { BookOpen, Star, ExternalLink, ArrowLeft, Sparkles, Loader } from "lucide-react";
+import { API_BASE_URL } from "../../lib/api";
 
 interface Book {
   id: number; title: string; author: string; rating: number;
@@ -31,17 +32,29 @@ export default function BookDetail() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`http://127.0.0.1:8000/api/books/${id}/`)
-      .then(r => r.json()).then(data => { setBook(data); if (data.summary) setInsightsDone(true); });
-    fetch(`http://127.0.0.1:8000/api/books/${id}/recommend/`)
-      .then(r => r.json()).then(setRecs);
+    fetch(`${API_BASE_URL}/api/books/${id}/`)
+      .then(r => r.json())
+      .then(data => { setBook(data); if (data?.summary) setInsightsDone(true); })
+      .catch(err => console.error("Error fetching book:", err));
+
+    fetch(`${API_BASE_URL}/api/books/${id}/recommend/`)
+      .then(r => r.json())
+      .then(data => setRecs(Array.isArray(data) ? data : []))
+      .catch(err => console.error("Error fetching recommendations:", err));
   }, [id]);
 
   const generateInsights = async () => {
     setLoadingInsights(true);
-    const res = await fetch(`http://127.0.0.1:8000/api/books/${id}/insights/`, { method: "POST" });
-    const data = await res.json();
-    setBook(data); setInsightsDone(true); setLoadingInsights(false);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/books/${id}/insights/`, { method: "POST" });
+      const data = await res.json();
+      setBook(data);
+      setInsightsDone(true);
+    } catch (err) {
+      console.error("Error generating insights:", err);
+    } finally {
+      setLoadingInsights(false);
+    }
   };
 
   if (!book) return (

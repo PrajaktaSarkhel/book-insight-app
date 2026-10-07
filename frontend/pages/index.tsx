@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { BookOpen, Search, Star, ChevronRight, Grid, List } from "lucide-react";
+import { API_BASE_URL } from "../lib/api";
 
 interface Book {
   id: number; title: string; author: string; rating: number;
@@ -39,9 +40,19 @@ export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/books/")
-      .then(r => r.json())
-      .then(data => { setBooks(data); setLoading(false); });
+    fetch(`${API_BASE_URL}/api/books/`)
+      .then(r => {
+        if (!r.ok) throw new Error("Failed to load books");
+        return r.json();
+      })
+      .then(data => {
+        setBooks(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("API error:", err);
+        setLoading(false);
+      });
 
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll);
